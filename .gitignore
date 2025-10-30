@@ -1,0 +1,17 @@
+node_modules
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+lib/
+out/
+cache_forge/
+cache_hardhat/
+cache_foundry/
+cache_solidity-coverage/
+cache_solidity-coverage-ir/
+cache_solidity-coverage-ir-via-ir/
+cache_solidity-coverage-ir-via-ir-via-ir/
+cache_solidity-coverage-ir-via-ir-via-ir-via-ir/
+cache_solidity-coverage-ir-via-ir-via-ir-via-ir-via-ir/

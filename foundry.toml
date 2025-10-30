@@ -1,0 +1,12 @@
+[profile.default]
+solc_version = "0.8.20"
+src = "contracts"
+test = "test"
+out = "out"
+libs = ["lib"]
+remappings = [
+    "@openzeppelin/=lib/openzeppelin-contracts/"
+]
+
+[fuzz]
+runs = 64
