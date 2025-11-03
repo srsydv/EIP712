@@ -10,6 +10,7 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
  * @notice Off-chain (MetaMask) signed voting verified on-chain via EIP-712.
  *         - Users sign a Vote struct using eth_signTypedData_v4.
  *         - Contract verifies the signature and records one vote per voter per election.
+ *         - Owner can change voting end timestamp at any time before finalization.
  *         - Owner can finalize the winner after votingEnd.
  *
  * Security / Replay Protection
@@ -35,12 +36,13 @@ contract EIP712Voting is EIP712, Ownable {
     // --- Events ---
     event VoteAccepted(address indexed voter, uint256 indexed electionId, uint256 indexed candidateId);
     event WinnerFinalized(uint256 indexed electionId, uint256 indexed winningCandidateId, uint256 votes);
+    event VotingEndUpdated(uint256 oldVotingEnd, uint256 newVotingEnd);
 
     // --- Storage ---
     string public electionName;
     string[] private _candidates;
     uint256 public immutable votingStart;
-    uint256 public immutable votingEnd;
+    uint256 public votingEnd; // Owner can change this anytime
     uint256 public immutable electionId;
 
     mapping(uint256 => uint256) public candidateIdToVotes; // candidateId => votes
@@ -129,6 +131,21 @@ contract EIP712Voting is EIP712, Ownable {
         voterNonces[vote.voter] = vote.nonce + 1;
 
         emit VoteAccepted(vote.voter, vote.electionId, vote.candidateId);
+    }
+
+    // --- Owner Functions ---
+    /**
+     * @notice Allows owner to change the voting end timestamp at any time.
+     * @param newVotingEnd The new voting end timestamp (unix timestamp).
+     */
+    function setVotingEnd(uint256 newVotingEnd) external onlyOwner {
+        require(!finalized, "already finalized");
+        require(newVotingEnd > votingStart, "votingEnd must be after votingStart");
+        
+        uint256 oldVotingEnd = votingEnd;
+        votingEnd = newVotingEnd;
+        
+        emit VotingEndUpdated(oldVotingEnd, newVotingEnd);
     }
 
     // --- Finalization ---
