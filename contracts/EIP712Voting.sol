@@ -37,6 +37,7 @@ contract EIP712Voting is EIP712, Ownable {
     event WinnerFinalized(uint256 indexed electionId, uint256 indexed winningCandidateId, uint256 votes);
 
     // --- Storage ---
+    string public electionName;
     string[] private _candidates;
     uint256 public immutable votingStart;
     uint256 public immutable votingEnd;
@@ -51,14 +52,15 @@ contract EIP712Voting is EIP712, Ownable {
 
     // --- Constructor ---
     constructor(
-        string memory electionName,
+        string memory electionName_,
         string[] memory candidateNames,
         uint256 votingDurationSeconds,
         uint256 electionId_,
         address initialOwner
-    ) EIP712(electionName, "1") Ownable(initialOwner) {
+    ) EIP712(electionName_, "1") Ownable(initialOwner) {
         require(candidateNames.length >= 2, "need >= 2 candidates");
         require(votingDurationSeconds > 0, "invalid duration");
+        electionName = electionName_;
         _candidates = candidateNames;
         votingStart = block.timestamp;
         votingEnd = block.timestamp + votingDurationSeconds;
