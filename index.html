@@ -226,8 +226,9 @@
             <div class="section">
                 <div class="section-title">1. Connect Wallet</div>
                 <div class="input-group">
-                    <label for="contractAddress">Contract Address:</label>
-                    <input type="text" id="contractAddress" placeholder="0x..." />
+                    <label for="contractAddress">Contract Address <span style="color:#999;font-weight:400;">(Sepolia)</span>:</label>
+                    <input type="text" id="contractAddress" placeholder="0x..." value="0x1581dd98E175A9eB40c39F27579C31Fa7a7394a3" />
+                    <small style="display:block;margin-top:8px;color:#666;">Deployed contract: <code>0x1581dd98E175A9eB40c39F27579C31Fa7a7394a3</code></small>
                 </div>
                 <button class="btn" id="connectBtn" onclick="connectWallet()">Connect MetaMask</button>
                 <div id="accountInfo" class="account-info hidden">
@@ -279,6 +280,17 @@
         let electionName = null;
         let hasVoted = false;
 
+        const DEFAULT_CONTRACT_ADDRESS = "0x1581dd98E175A9eB40c39F27579C31Fa7a7394a3";
+        const EXPECTED_CHAIN_ID = 11155111; // Sepolia
+        const EXPECTED_NETWORK_NAME = "sepolia";
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const input = document.getElementById("contractAddress");
+            if (!input.value) {
+                input.value = DEFAULT_CONTRACT_ADDRESS;
+            }
+        });
+
         // Contract ABI - only the functions we need
         const CONTRACT_ABI = [
             "function candidatesLength() external view returns (uint256)",
@@ -328,6 +340,13 @@
                 document.getElementById('accountInfo').classList.remove('hidden');
                 document.getElementById('connectBtn').disabled = true;
                 document.getElementById('connectBtn').textContent = 'Connected ✓';
+
+                if (network.chainId !== EXPECTED_CHAIN_ID) {
+                    showStatus(`Please switch MetaMask to the ${EXPECTED_NETWORK_NAME} network (current: ${network.name})`, 'error');
+                    document.getElementById('connectBtn').disabled = false;
+                    document.getElementById('connectBtn').textContent = 'Connect MetaMask';
+                    return;
+                }
 
                 // Load contract data
                 await loadContractData();
