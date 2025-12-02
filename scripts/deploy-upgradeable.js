@@ -51,7 +51,6 @@ async function main() {
 
   // Deploy the UUPS proxy
   console.log("\n📦 Deploying UUPS Proxy...");
-  const ERC1967Proxy = await hre.ethers.getContractFactory("ERC1967Proxy");
   
   const owner = ownerAddress || deployer.address;
   const initData = EIP712Voting.interface.encodeFunctionData("initialize", [
@@ -62,7 +61,9 @@ async function main() {
     owner
   ]);
 
-  const proxy = await ERC1967Proxy.deploy(implementationAddress, initData);
+  // Deploy proxy using our Proxy contract (which extends ERC1967Proxy)
+  const Proxy = await hre.ethers.getContractFactory("Proxy");
+  const proxy = await Proxy.deploy(implementationAddress, initData);
   await proxy.waitForDeployment();
   const proxyAddress = await proxy.getAddress();
   console.log("✅ Proxy deployed to:", proxyAddress);
