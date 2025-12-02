@@ -7,6 +7,9 @@
     "deploy:local": "hardhat run scripts/deploy.js --network localhost",
     "deploy:sepolia": "hardhat run scripts/deploy.js --network sepolia",
     "deploy:mainnet": "hardhat run scripts/deploy.js --network mainnet",
+    "deploy:upgradeable:local": "hardhat run scripts/deploy-upgradeable.js --network localhost",
+    "deploy:upgradeable:sepolia": "hardhat run scripts/deploy-upgradeable.js --network sepolia",
+    "deploy:upgradeable:mainnet": "hardhat run scripts/deploy-upgradeable.js --network mainnet",
     "node": "hardhat node"
   },
   "devDependencies": {
@@ -15,7 +18,7 @@
   },
   "dependencies": {
     "@openzeppelin/contracts": "^5.0.0",
+    "@openzeppelin/contracts-upgradeable": "^5.4.0",
     "dotenv": "^16.3.1"
   }
 }
-

@@ -1,11 +1,12 @@
 [profile.default]
-solc_version = "0.8.20"
+solc_version = "0.8.22"
 src = "contracts"
 test = "test"
 out = "out"
 libs = ["lib"]
 remappings = [
-    "@openzeppelin/=lib/openzeppelin-contracts/"
+    "@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/",
+    "@openzeppelin/contracts-upgradeable/=node_modules/@openzeppelin/contracts-upgradeable/"
 ]
 
 [fuzz]

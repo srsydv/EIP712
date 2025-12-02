@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.22;
 
 import "forge-std/Test.sol";
 import "../contracts/EIP712Voting.sol";
+import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 
 contract EIP712VotingTest is Test {
     EIP712Voting private voting;
@@ -22,13 +23,22 @@ contract EIP712VotingTest is Test {
         candidateNames.push("Bob");
         candidateNames.push("Carol");
 
-        voting = new EIP712Voting(
+        // Deploy implementation
+        EIP712Voting implementation = new EIP712Voting();
+        
+        // Encode initialization data
+        bytes memory initData = abi.encodeWithSelector(
+            EIP712Voting.initialize.selector,
             ELECTION_NAME,
             candidateNames,
             1 days,
             ELECTION_ID,
             address(this)
         );
+        
+        // Deploy proxy
+        ERC1967Proxy proxy = new ERC1967Proxy(address(implementation), initData);
+        voting = EIP712Voting(address(proxy));
 
         voter1Pk = 0xA11CE;
         voter2Pk = 0xB0B;

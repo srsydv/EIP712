@@ -1,9 +1,11 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.22;
 
-import {EIP712} from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
+import {EIP712Upgradeable} from "@openzeppelin/contracts-upgradeable/utils/cryptography/EIP712Upgradeable.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 /**
  * @title EIP712Voting
@@ -12,13 +14,14 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
  *         - Contract verifies the signature and records one vote per voter per election.
  *         - Owner can change voting end timestamp at any time before finalization.
  *         - Owner can finalize the winner after votingEnd.
+ *         - Contract is upgradeable using UUPS proxy pattern.
  *
  * Security / Replay Protection
  * - Includes electionId in the signed data to prevent cross-election replay.
  * - Includes nonce per voter to prevent replay of the same signature.
  * - Includes deadline in the signed data to bound signature validity.
  */
-contract EIP712Voting is EIP712, Ownable {
+contract EIP712Voting is Initializable, EIP712Upgradeable, OwnableUpgradeable, UUPSUpgradeable {
     // --- Types ---
     struct Vote {
         address voter;
@@ -41,9 +44,9 @@ contract EIP712Voting is EIP712, Ownable {
     // --- Storage ---
     string public electionName;
     string[] private _candidates;
-    uint256 public immutable votingStart;
+    uint256 public votingStart;
     uint256 public votingEnd; // Owner can change this anytime
-    uint256 public immutable electionId;
+    uint256 public electionId;
 
     mapping(uint256 => uint256) public candidateIdToVotes; // candidateId => votes
     mapping(uint256 => mapping(address => bool)) public hasVotedForElection; // electionId => voter => voted
@@ -52,16 +55,35 @@ contract EIP712Voting is EIP712, Ownable {
     bool public finalized;
     uint256 public winningCandidateId;
 
-    // --- Constructor ---
-    constructor(
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() {
+        _disableInitializers();
+    }
+
+    // --- Initialization ---
+    /**
+     * @notice Initializes the contract (replaces constructor for upgradeable contracts).
+     * @param electionName_ The name of the election (used in EIP-712 domain).
+     * @param candidateNames Array of candidate names.
+     * @param votingDurationSeconds Duration of voting period in seconds.
+     * @param electionId_ Unique identifier for this election.
+     * @param initialOwner Address that will own the contract.
+     */
+    function initialize(
         string memory electionName_,
         string[] memory candidateNames,
         uint256 votingDurationSeconds,
         uint256 electionId_,
         address initialOwner
-    ) EIP712(electionName_, "1") Ownable(initialOwner) {
+    ) public initializer {
         require(candidateNames.length >= 2, "need >= 2 candidates");
         require(votingDurationSeconds > 0, "invalid duration");
+        require(initialOwner != address(0), "invalid owner");
+
+        __EIP712_init(electionName_, "1");
+        __Ownable_init(initialOwner);
+        __UUPSUpgradeable_init();
+
         electionName = electionName_;
         _candidates = candidateNames;
         votingStart = block.timestamp;
@@ -147,6 +169,12 @@ contract EIP712Voting is EIP712, Ownable {
         
         emit VotingEndUpdated(oldVotingEnd, newVotingEnd);
     }
+
+    /**
+     * @notice Authorizes an upgrade (required by UUPS pattern).
+     * @param newImplementation Address of the new implementation contract.
+     */
+    function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
 
     // --- Finalization ---
     function finalizeWinner() external onlyOwner {
