@@ -62,7 +62,8 @@ async function main() {
   ]);
 
   // Deploy proxy using our Proxy contract (which extends ERC1967Proxy)
-  const Proxy = await hre.ethers.getContractFactory("Proxy");
+  // Use fully qualified name to avoid conflict with OpenZeppelin's Proxy
+  const Proxy = await hre.ethers.getContractFactory("contracts/Proxy.sol:Proxy");
   const proxy = await Proxy.deploy(implementationAddress, initData);
   await proxy.waitForDeployment();
   const proxyAddress = await proxy.getAddress();
