@@ -1,5 +1,7 @@
 # Deployment Guide
-
+🎉 Deployment completed successfully!
+   Proxy: 0xeac9C1B4CE05b1A91927b35f7486034F6CCc1291
+   Implementation: 0x8996E502CF6c6f657296BB80c3e1902eF64F3b65
 This guide explains how to deploy the EIP712Voting contract using Hardhat.
 
 ## Prerequisites
