@@ -10,6 +10,7 @@
     "deploy:upgradeable:local": "hardhat run scripts/deploy-upgradeable.js --network localhost",
     "deploy:upgradeable:sepolia": "hardhat run scripts/deploy-upgradeable.js --network sepolia",
     "deploy:upgradeable:mainnet": "hardhat run scripts/deploy-upgradeable.js --network mainnet",
+    "verify:upgradeable": "hardhat run scripts/verify-upgradeable.js --network sepolia",
     "node": "hardhat node"
   },
   "devDependencies": {
