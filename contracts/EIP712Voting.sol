@@ -38,6 +38,7 @@ contract EIP712Voting is Initializable, EIP712Upgradeable, OwnableUpgradeable, U
 
     // --- Events ---
     event VoteAccepted(address indexed voter, uint256 indexed electionId, uint256 indexed candidateId);
+    event VoteRelayed(address indexed voter, address indexed relayer, uint256 indexed electionId, uint256 candidateId);
     event WinnerFinalized(uint256 indexed electionId, uint256 indexed winningCandidateId, uint256 votes);
     event VotingEndUpdated(uint256 oldVotingEnd, uint256 newVotingEnd);
 
@@ -151,6 +152,11 @@ contract EIP712Voting is Initializable, EIP712Upgradeable, OwnableUpgradeable, U
 
         // Bump nonce so this signature cannot be reused
         voterNonces[vote.voter] = vote.nonce + 1;
+
+        // Check if called by relayer (someone other than the voter)
+        if (msg.sender != vote.voter) {
+            emit VoteRelayed(vote.voter, msg.sender, vote.electionId, vote.candidateId);
+        }
 
         emit VoteAccepted(vote.voter, vote.electionId, vote.candidateId);
     }
