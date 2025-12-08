@@ -38,7 +38,7 @@ module.exports = {
     artifacts: "./artifacts",
   },
   etherscan: {
-    apiKey: process.env.ETHERSCAN_API_KEY || "",
+    apiKey: `TN3DX6Y6IU2C1H3ZCHGQJKD7MHUQZGKRMP`,
   },
   // Allow Foundry and Hardhat to coexist
   // OpenZeppelin contracts can be installed via npm or found in lib/
