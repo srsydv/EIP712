@@ -11,6 +11,7 @@
     "deploy:upgradeable:sepolia": "hardhat run scripts/deploy-upgradeable.js --network sepolia",
     "deploy:upgradeable:mainnet": "hardhat run scripts/deploy-upgradeable.js --network mainnet",
     "verify:upgradeable": "hardhat run scripts/verify-upgradeable.js --network sepolia",
+    "relayer:start": "node relayer-server.js",
     "node": "hardhat node"
   },
   "devDependencies": {
@@ -20,6 +21,9 @@
   "dependencies": {
     "@openzeppelin/contracts": "^5.0.0",
     "@openzeppelin/contracts-upgradeable": "^5.4.0",
-    "dotenv": "^16.3.1"
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "ethers": "^5.7.2",
+    "cors": "^2.8.5"
   }
 }

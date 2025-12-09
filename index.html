@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EIP-712 Voting DApp</title>
-    <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js" 
+            onerror="alert('Failed to load ethers.js library. Please check your internet connection.')"></script>
     <style>
         * {
             margin: 0;
@@ -225,13 +226,16 @@
             <!-- Connection Section -->
             <div class="section">
                 <div class="section-title">1. Connect Wallet</div>
+                <div class="status info" style="margin-bottom: 15px;">
+                    💡 <strong>Gasless Voting Enabled!</strong> Sign your vote (free) and our relayer will submit it for you.
+                </div>
                 <div class="input-group">
                     <label for="contractAddress">Contract Address <span style="color:#999;font-weight:400;">(Sepolia)</span>:</label>
                     <input type="text" id="contractAddress" placeholder="0x..." value="0xeac9C1B4CE05b1A91927b35f7486034F6CCc1291" />
                     <small style="display:block;margin-top:8px;color:#666;">Proxy Address (Upgradeable): <code>0xeac9C1B4CE05b1A91927b35f7486034F6CCc1291</code></small>
                     <small style="display:block;margin-top:4px;color:#999;font-size:0.85em;">✨ This address never changes, even after upgrades!</small>
                 </div>
-                <button class="btn" id="connectBtn" onclick="connectWallet()">Connect MetaMask</button>
+                <button class="btn" id="connectBtn">Connect MetaMask</button>
                 <div id="accountInfo" class="account-info hidden">
                     <strong>Connected:</strong> <span id="accountAddress"></span><br>
                     <strong>Network:</strong> <span id="networkName"></span>
@@ -255,14 +259,14 @@
 
                 <div class="candidates-grid" id="candidatesGrid"></div>
 
-                <button class="btn" id="voteBtn" onclick="castVote()" disabled>Vote</button>
+                <button class="btn" id="voteBtn" disabled>Vote</button>
             </div>
 
             <!-- Results Section -->
             <div id="resultsSection" class="section hidden">
                 <div class="section-title">3. Results</div>
                 <div id="resultsContent"></div>
-                <button class="btn btn-secondary" onclick="refreshResults()">Refresh Results</button>
+                <button class="btn btn-secondary" id="refreshBtn">Refresh Results</button>
             </div>
 
             <!-- Status Messages -->
@@ -271,7 +275,21 @@
     </div>
 
     <script>
-        let provider;
+        // Wait for ethers.js to load before executing code
+        (function() {
+            function waitForEthers() {
+                if (typeof ethers !== 'undefined') {
+                    // ethers is loaded, proceed with app initialization
+                    initializeApp();
+                } else {
+                    // Check again in 100ms
+                    setTimeout(waitForEthers, 100);
+                }
+            }
+
+            function initializeApp() {
+                // All your app code goes here
+                let provider;
         let signer;
         let contract;
         let userAddress;
@@ -311,6 +329,12 @@
 
         async function connectWallet() {
             try {
+                // Check if ethers is loaded
+                if (typeof ethers === 'undefined') {
+                    showStatus('Error: ethers.js library not loaded. Please refresh the page.', 'error');
+                    return;
+                }
+
                 if (typeof window.ethereum === 'undefined') {
                     showStatus('Please install MetaMask!', 'error');
                     return;
@@ -522,26 +546,58 @@
                 // Sign the typed data
                 const signature = await signer._signTypedData(domain, types, vote);
                 
-                showStatus('Submitting your vote...', 'info');
+                showStatus('Sending vote to relayer (gasless!)...', 'info');
 
-                // Submit the vote
-                const tx = await contract.submitVote(vote, signature);
-                showStatus(`Transaction sent! Hash: ${tx.hash}`, 'info');
+                // Send to relayer server (you pay no gas!)
+                // Change this to your relayer server URL
+                const RELAYER_URL = 'http://localhost:3000'; // Update this to your relayer URL
                 
-                // Wait for confirmation
-                const receipt = await tx.wait();
-                
-                if (receipt.status === 1) {
-                    showStatus('✓ Vote submitted successfully!', 'success');
-                    hasVoted = true;
+                try {
+                    const response = await fetch(`${RELAYER_URL}/api/submit-vote`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ vote, signature })
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok && result.success) {
+                        showStatus('✓ Vote signed and sent! Relayer will submit it (no gas cost for you!)', 'success');
+                        
+                        // Mark as voted (optimistic)
+                        hasVoted = true;
+                        
+                        // Refresh data after a delay to see the vote
+                        setTimeout(() => {
+                            loadContractData();
+                            loadResults();
+                        }, 3000);
+                    } else {
+                        throw new Error(result.error || 'Failed to submit vote');
+                    }
+                } catch (fetchError) {
+                    // Fallback: submit directly if relayer is unavailable
+                    console.warn('Relayer unavailable, submitting directly:', fetchError);
+                    showStatus('Relayer unavailable, submitting directly (you pay gas)...', 'info');
                     
-                    // Refresh data
-                    setTimeout(() => {
-                        loadContractData();
-                        loadResults();
-                    }, 2000);
-                } else {
-                    showStatus('Transaction failed', 'error');
+                    const tx = await contract.submitVote(vote, signature);
+                    showStatus(`Transaction sent! Hash: ${tx.hash}`, 'info');
+                    
+                    const receipt = await tx.wait();
+                    
+                    if (receipt.status === 1) {
+                        showStatus('✓ Vote submitted successfully!', 'success');
+                        hasVoted = true;
+                        
+                        setTimeout(() => {
+                            loadContractData();
+                            loadResults();
+                        }, 2000);
+                    } else {
+                        showStatus('Transaction failed', 'error');
+                    }
                 }
 
             } catch (error) {
@@ -640,6 +696,16 @@
                 location.reload();
             });
         }
+
+            // Attach event listeners after all functions are defined
+            document.getElementById("connectBtn").addEventListener("click", connectWallet);
+            document.getElementById("voteBtn").addEventListener("click", castVote);
+            document.getElementById("refreshBtn").addEventListener("click", refreshResults);
+            } // Close initializeApp function
+
+            // Start waiting for ethers to load
+            waitForEthers();
+        })(); // Close IIFE
     </script>
 </body>
 </html>
