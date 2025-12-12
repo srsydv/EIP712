@@ -1,8 +1,13 @@
 # Deployment Guide
-🎉 Deployment completed successfully!
-   Proxy: 0xeac9C1B4CE05b1A91927b35f7486034F6CCc1291
-   Implementation: 0x8996E502CF6c6f657296BB80c3e1902eF64F3b65
+
 This guide explains how to deploy the EIP712Voting contract using Hardhat.
+
+## Current Deployment (Sepolia)
+
+- **Proxy Address**: `0xeac9C1B4CE05b1A91927b35f7486034F6CCc1291` (use this in frontend)
+- **Implementation Address**: `0x8996E502CF6c6f657296BB80c3e1902eF64F3b65`
+- **Network**: Sepolia Testnet
+- **Status**: ✅ Verified on Etherscan
 
 ## Prerequisites
 
@@ -66,6 +71,25 @@ npm run compile
    npm run deploy:sepolia
    ```
 
+### Upgradeable Deployment (Recommended)
+
+For upgradeable contracts using UUPS proxy:
+
+```bash
+# Sepolia
+npm run deploy:upgradeable:sepolia
+
+# Mainnet
+npm run deploy:upgradeable:mainnet
+```
+
+This deploys:
+1. Implementation contract
+2. UUPS proxy contract
+3. Initializes the contract
+
+**Use the PROXY address in your frontend** - it never changes even after upgrades.
+
 ### Mainnet (Production)
 
 ⚠️ **Warning**: Deploying to mainnet costs real ETH!
@@ -74,7 +98,7 @@ npm run compile
 2. Ensure you have sufficient ETH for gas
 3. Deploy:
    ```bash
-   npm run deploy:mainnet
+   npm run deploy:upgradeable:mainnet
    ```
 
 ## Deployment Script Details
@@ -89,11 +113,38 @@ The deployment script (`scripts/deploy.js`) will:
 
 ## After Deployment
 
-1. **Copy the contract address** from the deployment output
-2. **Open `index.html`** in your browser
-3. **Paste the contract address** in the input field
-4. **Connect MetaMask** to the same network you deployed to
-5. **Start voting!** 🗳️
+1. **Copy the PROXY address** from the deployment output (not implementation)
+2. **Verify contracts** on Etherscan:
+   ```bash
+   npm run verify:upgradeable
+   ```
+3. **Setup relayer** (optional, for gasless voting):
+   - See [RELAYER_SETUP.md](RELAYER_SETUP.md) for details
+   - Add `RELAYER_PRIVATE_KEY` to `.env`
+   - Run `npm run relayer:start`
+4. **Update frontend** with proxy address (already pre-filled)
+5. **Open `index.html`** in your browser
+6. **Connect MetaMask** to the same network
+7. **Start voting!** 🗳️
+
+## Gasless Voting Setup
+
+To enable gasless voting (users don't pay gas):
+
+1. **Create relayer wallet**: Generate a new wallet for your bot
+2. **Fund relayer wallet**: Send ETH for gas fees
+3. **Configure `.env`**:
+   ```env
+   RELAYER_PRIVATE_KEY=0xYourRelayerPrivateKey
+   CONTRACT_ADDRESS=0xeac9C1B4CE05b1A91927b35f7486034F6CCc1291
+   ```
+4. **Start relayer server**:
+   ```bash
+   npm run relayer:start
+   ```
+5. **Update frontend relayer URL** (if deploying to server)
+
+See [RELAYER_SETUP.md](RELAYER_SETUP.md) for complete guide.
 
 ## Environment Variables Reference
 
@@ -107,6 +158,9 @@ The deployment script (`scripts/deploy.js`) will:
 | `VOTING_DURATION_SECONDS` | No | Duration in seconds (default: 604800 = 7 days) | `604800` |
 | `ELECTION_ID` | No | Election ID (default: 1) | `1` |
 | `OWNER_ADDRESS` | No | Owner address (default: deployer) | `0x123...abc` |
+| `RELAYER_PRIVATE_KEY` | For gasless | Relayer bot private key | `0x123...abc` |
+| `CONTRACT_ADDRESS` | For relayer | Proxy contract address | `0x123...abc` |
+| `ETHERSCAN_API_KEY` | For verification | Etherscan API key | `YourKey` |
 
 ## Troubleshooting
 

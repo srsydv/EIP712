@@ -55,18 +55,20 @@ The frontend automatically loads:
 - **Current Vote Counts**: Real-time vote tallies
 - **Your Voting Status**: Whether you've already voted
 
-### Step 4: Cast a Vote
+### Step 4: Cast a Vote (Gasless!)
 
 1. **Select a Candidate**: Click on one of the candidate cards (SP, BJP, or Congress)
 2. **Click "Vote" Button**
-3. **MetaMask Popup #1**: Shows EIP-712 typed data signature request
+3. **MetaMask Popup**: Shows EIP-712 typed data signature request
    - User sees a readable message like "You are voting for BJP in election #1"
+   - **No transaction, no gas fee!** Just signing a message
    - User clicks "Sign"
-4. **MetaMask Popup #2**: Transaction confirmation
-   - Shows gas fee
-   - User clicks "Confirm"
-5. **Wait for Confirmation**: Transaction is mined on Sepolia
-6. **Success!**: Vote is recorded, vote counts update automatically
+4. **Vote Sent to Relayer**: Frontend sends signed vote to relayer server
+5. **Relayer Submits**: Bot submits transaction and pays gas
+6. **Success!**: Vote is recorded under **your address**, vote counts update automatically
+7. **You Paid $0 in Gas!** 🎉
+
+**Note**: If relayer is unavailable, frontend falls back to direct submission (you pay gas).
 
 ### Step 5: View Results
 
@@ -142,9 +144,11 @@ The frontend automatically loads:
 1. ✅ Contract deployed to Sepolia (or Mainnet)
 2. ✅ Contract verified on Etherscan
 3. ✅ Frontend updated with proxy address
-4. ✅ Frontend hosted (GitHub Pages, Netlify, IPFS, etc.)
-5. ✅ Domain name (optional but recommended)
-6. ✅ Share the link with voters!
+4. ✅ **Relayer server deployed and running** (for gasless voting)
+5. ✅ Relayer wallet funded with ETH
+6. ✅ Frontend hosted (GitHub Pages, Netlify, IPFS, etc.)
+7. ✅ Domain name (optional but recommended)
+8. ✅ Share the link with voters!
 
 ### Frontend Hosting Options:
 
@@ -157,28 +161,29 @@ The frontend automatically loads:
 
 ## Example User Journey
 
-**Alice wants to vote:**
+**Alice wants to vote (Gasless!):**
 
 1. Opens browser, goes to `https://your-voting-app.com`
 2. Sees three candidates: SP, BJP, Congress
 3. Clicks on "BJP" card (it highlights)
 4. Clicks "Vote" button
 5. MetaMask opens: "Sign this message to vote for BJP"
+   - **No transaction, no gas fee!** Just signing
 6. Clicks "Sign"
-7. MetaMask opens: "Confirm transaction" (gas fee: ~0.001 ETH)
-8. Clicks "Confirm"
-9. Waits 10-15 seconds
-10. Sees: "✓ Vote submitted successfully!"
-11. Vote counts update: BJP now has 1 vote
-12. Alice can see her vote was recorded
+7. Sees: "✓ Vote signed and sent! Relayer will submit it (no gas cost for you!)"
+8. Waits a few seconds (relayer submits in background)
+9. Vote counts update: BJP now has 1 vote
+10. Alice can see her vote was recorded - **she paid $0 in gas!** 🎉
 
-**Bob wants to vote:**
+**Bob wants to vote (Also Gasless!):**
 
 1. Opens the same link
 2. Sees BJP has 1 vote, SP and Congress have 0
 3. Clicks on "SP" card
-4. Follows same process
-5. SP now has 1 vote, BJP still has 1
+4. Signs the vote (free, no gas)
+5. Relayer submits it
+6. SP now has 1 vote, BJP still has 1
+7. **Bob also paid $0 in gas!** 🎉
 
 **After voting ends:**
 
@@ -208,7 +213,8 @@ The frontend automatically loads:
 - User needs to switch MetaMask to Sepolia network
 
 ### "Insufficient Funds"
-- User needs Sepolia ETH for gas fees (get from faucet)
+- **Not needed for gasless voting!** Users only sign, don't pay gas
+- Only needed if relayer is down and user submits directly
 
 ### "You have already voted"
 - User already cast their vote in this election
@@ -221,16 +227,21 @@ The frontend automatically loads:
 ## Summary
 
 **For Users:**
-- Simple, one-click voting experience
-- No technical knowledge needed
-- Secure, transparent, verifiable
+- ✅ Simple, one-click voting experience
+- ✅ **Gasless voting** - sign for free, relayer pays gas
+- ✅ No technical knowledge needed
+- ✅ Secure, transparent, verifiable
+- ✅ Votes attributed to you, not relayer
 
 **For You (Owner):**
-- Proxy address never changes
-- Can upgrade contract without disrupting users
-- All votes and state preserved during upgrades
-- Full control over voting period and finalization
+- ✅ Proxy address never changes: `0xeac9C1B4CE05b1A91927b35f7486034F6CCc1291`
+- ✅ Can upgrade contract without disrupting users
+- ✅ All votes preserved during upgrades
+- ✅ Full control over voting period
+- ✅ Control gas costs via relayer
 
 **The Magic:**
-Users interact with one address (`0xeac9C1B4CE05b1A91927b35f7486034F6CCc1291`) that never changes, while you can upgrade the contract code behind the scenes. It's the best of both worlds! 🎉
+1. **Proxy Pattern**: Users interact with one address that never changes, while you can upgrade the contract code behind the scenes
+2. **Gasless Voting**: Users sign votes (free), your relayer pays gas, but votes are attributed to the users
+3. **Best of Both Worlds**: Users get gasless experience, you get upgradeable contracts! 🎉
 
