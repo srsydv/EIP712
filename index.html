@@ -213,16 +213,207 @@
             margin-bottom: 20px;
             border-left: 4px solid #ffc107;
         }
+
+        .guide-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s;
+        }
+
+        .guide-toggle:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .guide-panel {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out, padding 0.3s ease-out, margin 0.3s ease-out;
+        }
+
+        .guide-panel.open {
+            max-height: 2000px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+
+        .guide-step {
+            margin-bottom: 20px;
+            padding-left: 30px;
+            position: relative;
+        }
+
+        .guide-step::before {
+            content: counter(step-counter);
+            counter-increment: step-counter;
+            position: absolute;
+            left: 0;
+            top: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .guide-container {
+            counter-reset: step-counter;
+        }
+
+        .guide-step h4 {
+            margin-bottom: 8px;
+            color: #667eea;
+            font-size: 1.1em;
+        }
+
+        .guide-step p {
+            margin: 5px 0;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .guide-step ul {
+            margin: 8px 0;
+            padding-left: 20px;
+        }
+
+        .guide-step li {
+            margin: 5px 0;
+            color: #666;
+        }
+
+        .guide-feature {
+            background: #f0f4ff;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border-left: 3px solid #667eea;
+        }
+
+        .guide-feature strong {
+            color: #667eea;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
+        <div class="header" style="position: relative;">
             <h1>🗳️ EIP-712 Voting</h1>
             <p>Cast your vote using MetaMask</p>
+            <button class="guide-toggle" onclick="toggleGuide()">📖 How to Vote</button>
         </div>
 
         <div class="content">
+            <!-- Guide Section -->
+            <div class="guide-panel" id="guidePanel">
+                <div class="guide-container">
+                    <h3 style="margin-bottom: 20px; color: #667eea; border-bottom: 2px solid #667eea; padding-bottom: 10px;">
+                        📖 Voting Guide - How It Works
+                    </h3>
+
+                    <div class="guide-step">
+                        <h4>Step 1: Connect Your Wallet</h4>
+                        <p>Click "Connect MetaMask" and approve the connection. Make sure you're on the <strong>Sepolia network</strong>.</p>
+                        <ul>
+                            <li>If you don't have MetaMask, install it from <a href="https://metamask.io" target="_blank">metamask.io</a></li>
+                            <li>If you're on the wrong network, MetaMask will prompt you to switch</li>
+                        </ul>
+                    </div>
+
+                    <div class="guide-step">
+                        <h4>Step 2: View Election Information</h4>
+                        <p>Once connected, you'll see:</p>
+                        <ul>
+                            <li><strong>Election name</strong> and ID</li>
+                            <li><strong>Voting period</strong> (start and end dates)</li>
+                            <li><strong>All candidates</strong> with current vote counts</li>
+                            <li><strong>Your voting status</strong> (whether you've already voted)</li>
+                        </ul>
+                    </div>
+
+                    <div class="guide-step">
+                        <h4>Step 3: Select Your Candidate</h4>
+                        <p>Click on the candidate card you want to vote for. The selected card will be highlighted.</p>
+                        <ul>
+                            <li>You can only vote once per election</li>
+                            <li>Make sure you select the correct candidate before voting</li>
+                        </ul>
+                    </div>
+
+                    <div class="guide-step">
+                        <h4>Step 4: Cast Your Vote (Gasless!)</h4>
+                        <p>Click the "Vote" button and follow these steps:</p>
+                        <ul>
+                            <li><strong>MetaMask will open</strong> showing a readable message like "You are voting for BJP in election #1"</li>
+                            <li><strong>Click "Sign"</strong> - This is FREE! No gas cost, just signing a message</li>
+                            <li><strong>Your vote is sent to our relayer</strong> which submits it to the blockchain</li>
+                            <li><strong>You pay $0 in gas fees!</strong> 🎉</li>
+                        </ul>
+                        <div class="guide-feature">
+                            <strong>💡 Gasless Voting:</strong> You only sign the vote (free), our relayer pays the gas fees. Your vote is still recorded under your address!
+                        </div>
+                    </div>
+
+                    <div class="guide-step">
+                        <h4>Step 5: View Results</h4>
+                        <p>After voting, you'll see:</p>
+                        <ul>
+                            <li><strong>Updated vote counts</strong> for all candidates</li>
+                            <li><strong>Your vote confirmation</strong></li>
+                            <li><strong>Real-time updates</strong> as others vote</li>
+                            <li><strong>Final winner</strong> after the election is finalized</li>
+                        </ul>
+                    </div>
+
+                    <div class="guide-feature" style="margin-top: 20px;">
+                        <strong>🔒 Security Features:</strong>
+                        <ul style="margin-top: 8px;">
+                            <li>One vote per user (enforced on-chain)</li>
+                            <li>Cryptographic signatures prevent fraud</li>
+                            <li>Nonce protection prevents replay attacks</li>
+                            <li>All votes are transparent and verifiable on blockchain</li>
+                        </ul>
+                    </div>
+
+                    <div class="guide-feature" style="margin-top: 15px;">
+                        <strong>❓ Troubleshooting:</strong>
+                        <ul style="margin-top: 8px;">
+                            <li><strong>"Please install MetaMask"</strong> - Install MetaMask browser extension</li>
+                            <li><strong>"Wrong Network"</strong> - Switch to Sepolia network in MetaMask</li>
+                            <li><strong>"Already voted"</strong> - You can only vote once per election</li>
+                            <li><strong>"Voting has ended"</strong> - The voting period is over</li>
+                            <li><strong>"Relayer unavailable"</strong> - Frontend will submit directly (you pay gas)</li>
+                        </ul>
+                    </div>
+
+                    <div style="margin-top: 20px; padding: 15px; background: #e8f5e9; border-radius: 8px; border-left: 4px solid #388e3c;">
+                        <strong style="color: #388e3c;">✅ Remember:</strong>
+                        <p style="margin-top: 8px; color: #555;">
+                            You're voting on the blockchain - your vote is permanent, transparent, and cannot be changed. 
+                            Make sure you're voting for the candidate you want before signing!
+                        </p>
+                    </div>
+                </div>
+            </div>
+
             <!-- Connection Section -->
             <div class="section">
                 <div class="section-title">1. Connect Wallet</div>
@@ -701,6 +892,25 @@
             document.getElementById("connectBtn").addEventListener("click", connectWallet);
             document.getElementById("voteBtn").addEventListener("click", castVote);
             document.getElementById("refreshBtn").addEventListener("click", refreshResults);
+
+            // Guide toggle function
+            function toggleGuide() {
+                const panel = document.getElementById('guidePanel');
+                if (panel) {
+                    panel.classList.toggle('open');
+                    const button = document.querySelector('.guide-toggle');
+                    if (button) {
+                        if (panel.classList.contains('open')) {
+                            button.textContent = '✕ Close Guide';
+                        } else {
+                            button.textContent = '📖 How to Vote';
+                        }
+                    }
+                }
+            }
+
+            // Make toggleGuide available globally
+            window.toggleGuide = toggleGuide;
             } // Close initializeApp function
 
             // Start waiting for ethers to load
